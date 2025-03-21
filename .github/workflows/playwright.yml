@@ -10,6 +10,9 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: windows-latest
+    permissions:
+      checks: write
+      pull-requests: write  # Required for test reporting
 
     steps:
       - name: Checkout Repository
@@ -27,7 +30,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run Playwright Tests
-        run: npx playwright test
+        run: npx playwright test --reporter=junit,junit-output.xml
 
       - name: Upload Playwright HTML Report
         uses: actions/upload-artifact@v4
@@ -42,12 +45,12 @@ jobs:
         if: always()
         with:
           name: junit-results
-          path: results.xml
+          path: junit-output.xml
 
       - name: Publish Test Summary in GitHub Actions UI
         if: always()
         uses: dorny/test-reporter@v1
         with:
           name: Playwright Test Results
-          path: results.xml
+          path: junit-output.xml
           reporter: jest-junit
